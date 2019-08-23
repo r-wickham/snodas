@@ -1,0 +1,14 @@
+
+#Session/User-Specific Files
+############################
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+#Raster Data 
+############
+*.tif
+*.ovr
+*.adf
+*.zip
