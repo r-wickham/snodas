@@ -50,13 +50,13 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
   
   ####For testing: #####
   # dates = seq(as.Date("2017-10-01"), as.Date("2018-09-30"), "d")
-  # saveDir <- "D:\\RunoffVolumeForecasting\\raster"
+  saveDir <- "raster"
   # parameters = c("swe","snow depth", "accumulated total precipitation",
   #                "accumulated solid precipitation",
   #                "accumulated liquid precipitation")
   # maxDlAttempts=5
-  # refExtentObject <- readOGR(dsn = "D:\\RunoffVolumeForecasting\\vector\\DistrictBoundary_100mi_Buffer.shp")
-  
+  # refExtentObject <- readOGR(dsn = "vector\\DistrictBoundary_100mi_Buffer.shp")
+
   #provides a pairing between the parameter and the file
   #  that gets downloaded from the ftp.  Only need
   #  to add in a date in the form of YYYYMMDD 
@@ -117,6 +117,7 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
 
   #Gets the parameter name from the parameter directory
   parFromParDir <- function(parDir) snodasMeta$par[match(parDir,snodasMeta$dirName)]
+  parDirFromPar <- function(par) snodasMeta$dirName[match(par,snodasMeta$par)]
   
   is.consecutive <- function(vec,allowGaps=T){
     #returns logical indicating which elements in the input vector are consecutive
@@ -292,14 +293,20 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
     Reduce("+",rList[rIndex]) #applying summation to each specified element
   }
   
-  accumulateRasterList <- function(rSubList){
+  accumulateRasterList <- function(rSubList, pars){
     #Takes a raster list and accumulates from smalles to largest date
+    parDirs <- parDirFromPar(pars) #named in raster list as 
     wyDates <- names(rSubList)
     wyDates <- sort(wyDates) #sort low-high
     accR <- list()
     accR[[wyDates[1]]] <- rSubList[[wyDates[1]]] #Initializing accumulation raster
-    for( k in 2:length(wyDates))
-      accR[[wyDates[k]]] <- sumRasters( c(accR[[k-1]], rSubList[[wyDates[k]]]) )
+    for( k in 2:length(wyDates)){ #Iterating through each day and required accumulation parameter
+      accR[[wyDates[k]]] <- list()
+      for( parDir in parDirs ){
+        accR[[wyDates[k]]][[parDir]] <- 
+          sumRasters( c(accR[[wyDates[k-1]]][[parDir]], rSubList[[wyDates[k]]][[parDir]]) )
+        }
+      }
     return(accR)
   }
   
@@ -309,7 +316,7 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
     wyDates <- sort(wyDates) #sort low-high
     out <- list()
     for( k in 1:length(wyDates))
-      out[[k]] <- sumRasters( c(accRList$[[wyDates[k]]], accRList[[wyDates[k]]]) )
+      out[[k]] <- sumRasters( c(accRList[[wyDates[k]]], accRList[[wyDates[k]]]) )
     return(out)
   }
   
@@ -387,13 +394,12 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
     
     #Nested list of raster file names: date > parameter
     rasFileNames <- 
-      lapply(wyDates, function(x) sapply(sprintf("%s/%s",saveDir,parDirs),dir,pattern = as.character(x)) )
-### CONTINUE HERE ############
+      lapply(wyDates, function(x) sapply(sprintf("%s/%s",saveDir,parDirs),dir,pattern = as.character(x),full.names=T) )
 
-    rList <- lapply(rasFileNames, function(x) {out <- lapply(x, raster)})
-    names(rList) <- pars #Naming lists after parameters
-    for( k in 1:length(rList)) #naming nested lists after dates
-      names(rList[[k]]) <- datesFromString(basename(rasFileNames[[k]]))
+    rList <- lapply(rasFileNames, function(x) lapply(x, raster))
+    names(rList) <- wyDates #Naming lists after dates
+    #naming nested lists after parameters
+    for( k in 1:length(rList)) names(rList[[k]]) <- basename(names(rList[[k]]))
     return(rList)
   }
 
@@ -506,11 +512,29 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
       #Loading all available dates
       precipRList <- loadRasters(wyDates, requiredPrecipPars,saveDir)
       
-      accRList <- lapply(precipRList,accumulateRasterList) #Accumulating
+      
+      computeTotalPrecip <- function(precipRList){
+        #Takes a raster list of precip (solid and liquid) and computes total
+        parDirs <- parDirFromPar(pars) #named in raster list as 
+        wyDates <- names(rSubList)
+        wyDates <- sort(wyDates) #sort low-high
+        for( k in 2:length(wyDates)){ #Iterating through each day and summing liquid and solid precip
+          accR[[wyDates[k]]][["total precipitation"]] <- sumRasters( accR[[wyDates[k]]] )
+        }
+      }
+      
+      ### CONTINUE HERE ###########
+      #QC - check this works
+      #
       
       #Computing total accumulated precipitation
       if( "accumulated total precipitation" %in% accParameters )
-        accRList[["accumulated total precipitation"]] <- computeTotalAccPrecip(accRList)
+        # accRList[["accumulated total precipitation"]] <- computeTotalAccPrecip(accRList)
+        accRList <- computeTotalPrecip(precipRList)
+      
+      accRList <- accumulateRasterList(accRList, accParameters) #Accumulating specified parameters
+      
+
 
       #Writing out by date
       for(wyDate in wyDates){

@@ -4,28 +4,18 @@ library(rgdal)
 library(RNRCS)
 library(dplyr)
 
-baseDir <- "D:\\RunoffVolumeForecasting"
+baseDir <- getwd()
 
 archiveDir <- paste0(baseDir,"\\archive")
 vecDir <- paste0(baseDir,"\\vector")
 rasDir <- paste0(baseDir,"\\raster")
 
 #Reading in as RGDAL object
-# elevNWW <- raster(x =paste0(rasDir,"\\elev\\usgs_90m_dem"))
-# elevNWW <- raster(x =paste0(rasDir,"\\elev\\usgs_elev"))
 elevNWWFileName <- paste0(rasDir,"\\elev\\usgs_elev")
-# plot(elevNWW)
+
 
 #loading a SWE raster
 sweFileNames <- dir(paste0(rasDir,"\\precip_liquid"),pattern = "*.tif$",full.names = T)
-# sweFileNames <- dir(paste0(rasDir,"\\swe"),pattern = "*.tif$",full.names = T)
-# swe <- raster(x = dir(paste0(rasDir,"\\swe"),pattern = "*.tif",full.names = T)[238] )
-# plot(swe,add=T)
-
-#forecast polygons
-# forecastPoly <- readOGR(dsn = paste0(vecDir,"\\Dworshak_Boundary.shp"))
-# plot(forecastPoly,add=T,col="white")
-
 
 
 
