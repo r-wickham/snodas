@@ -8,9 +8,8 @@
 
 #Raster Data 
 ############
-*.tif
-*.ovr
-*.adf
-*.zip
 raster/
-vector/
+
+#Vector Data
+############
+vector/HUC*
