@@ -1,0 +1,11 @@
+Parameters,Units,Scale Factor,Product Code,V Code,Description,Variable Type
+SWE,meters,1000,1034,,Snapshot at 06:00 UTC,State
+Snow Depth,meters,1000,1036,,Snapshot at 06:00 UTC,State
+Snow Melt Runoff at the Base of the Snow Pack,meters,"100,000",1044,,"Total of 24 per hour melt rates, 06:00 UTC-06:00 UTC",Diagnostic
+Sublimation from the Snow Pack,meters,"100,000",1050,,"Total of 24 per hour sublimation rates, 06:00",Diagnostic
+,,,,,UTC-06:00 UTC,
+Sublimation of Blowing Snow,meters,"100,000",1039,,"Total of 24 per hour sublimation rates, 06:00",Diagnostic
+,,,,,UTC-06:00 UTC,
+Solid Precipitation,kg/m2,10,1025 (v code = IL01),IL01,"24 hour total, 06:00 UTC-06:00 UTC",Driving
+Liquid Precipitation,kg/m2,10,1025 (v code = IL00),IL00,"24 hour total, 06:00 UTC-06:00 UTC",Driving
+Snow Pack Average Temperature,kelvin,1,1038,,,State

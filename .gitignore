@@ -12,3 +12,5 @@
 *.ovr
 *.adf
 *.zip
+raster/
+vector/
