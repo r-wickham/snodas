@@ -437,6 +437,9 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
 
   
   ### Additional checks ###########
+  # - if downloading more than a year's worth of data, prompt warning that it will take
+  #   up a lot of memory, and will be quicker to execute in a loop by water year
+  
   # - data have already been processed - prompt if they have and remove date from 'dDates'
   ### TODO ####
   
