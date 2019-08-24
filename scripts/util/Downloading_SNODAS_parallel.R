@@ -402,6 +402,11 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
     for( k in 1:length(rList)) names(rList[[k]]) <- basename(names(rList[[k]]))
     return(rList)
   }
+  
+  
+  
+  writeLog <- function(m) write.table(x = m, file = "log.txt",append = T, quote = F, row.names = F, col.names = F)
+  
 
   ### QC checks #############
 
@@ -465,6 +470,9 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
   
   rList <-
     foreach::foreach(date = dDates, .packages = c("raster","rgdal", "lubridate")) %dopar% {
+      
+      writeLog(sprintf("[%5g/%5g]\t%s", which(as.character(date) == as.character(dDates)), length(dDates), date))
+      
       try({
         r <- dlSNODAStoRasterList(date, parameters,T) #download, create raster list
 
@@ -555,18 +563,4 @@ downloadSNODASparallel <- function(dates, saveDir=NULL, parameters,
 #### TESTING #######
 
 
-startDate <- as.Date("2015-09-29")
-endDate <- as.Date("2018-09-29")
-# # endDate <- Sys.Date()
-dates <- seq(startDate,endDate,by="d")
-# saveDir <- "D:\\RunoffVolumeForecasting\\raster"
-# parameters = c("swe","liquid precipitation","solid precipitation")
-# 
-# refExtentObject <-
-#   rgdal::readOGR(dsn = "D:\\RunoffVolumeForecasting\\vector\\DistrictBoundary_100mi_Buffer.shp")
-# 
-# rList <- downloadSNODASparallel(dates = dates,
-#                                 saveDir = saveDir,
-#                                 createArchive = F,
-#                                 parameters = parameters,
-#                                 refExtentObject = refExtentObject)
+
